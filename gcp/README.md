@@ -90,8 +90,8 @@ export CLUSTER_NAME=capi-mgmt-cluster
 
 # either call make targets
 make create-capi-cluster
-make bootstrap-capi-cluster
 make bootstrap-capi-flux2
+make bootstrap-capi-cluster
 
 # or do it manually
 gcloud container clusters create $CLUSTER_NAME  \
@@ -110,10 +110,6 @@ gcloud container clusters create $CLUSTER_NAME  \
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$$(gcloud config get-value core/account)
 kubectl cluster-info
 
-# you may need to set a personal GITHUB_TOKEN to avoid API rate limiting
-export GCP_B64ENCODED_CREDENTIALS=$(cat gke-sa-key.json | base64 | tr -d '\n' )
-clusterctl init --infrastructure gcp
-
 # may need to add --personal if the GITHUB_USER is not an org
 # you may need to set a personal GITHUB_TOKEN to avoid API rate limiting
 flux bootstrap github \
@@ -124,6 +120,26 @@ flux bootstrap github \
     --components-extra=image-reflector-controller,image-automation-controller \
     --read-write-key  \
     --personal
+
+# you may need to set a personal GITHUB_TOKEN to avoid API rate limiting
+export GCP_B64ENCODED_CREDENTIALS=$(cat gke-sa-key.json | base64 | tr -d '\n' )
+clusterctl init --infrastructure gcp
+
+# alternatively Cluster API can be installed as operator via Helm
+helm repo add capi-operator https://kubernetes-sigs.github.io/cluster-api-operator
+helm repo update
+
+export CREDENTIALS_SECRET_NAME="credentials-secret"
+export CREDENTIALS_SECRET_NAMESPACE="default"
+
+kubectl create secret generic "${CREDENTIALS_SECRET_NAME}" --from-literal=GCP_B64ENCODED_CREDENTIALS="${GCP_B64ENCODED_CREDENTIALS}" --namespace "${CREDENTIALS_SECRET_NAMESPACE}"
+helm install capi-operator capi-operator/cluster-api-operator \
+	--create-namespace -n capi-operator-system \
+	--set infrastructure=gcp \
+	--set cert-manager.enabled=true \
+	--set configSecret.name=${CREDENTIALS_SECRET_NAME} \
+	--set configSecret.namespace=${CREDENTIALS_SECRET_NAMESPACE} \
+	--wait --timeout 90s
 ```
 
 ## Create a CAPI Tenant Cluster
