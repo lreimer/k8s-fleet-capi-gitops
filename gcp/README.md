@@ -4,7 +4,7 @@ This lab describes how to spin up GKE clusters using Cluster API.
 
 ## Installation
 
-You need to have `clusterctl`, `gcloud`, `Packer` and `Ansible` installed locally for this lab. Alternativly, use the `cn-explab-shell` Docker image for a consistent local CLI tool setup.
+You need to have `kubectl`, `clusterctl`, `gcloud`, `Packer` and `Ansible` installed locally for this lab. 
 
 ## Setup a Network and Cloud NAT
 
@@ -41,14 +41,14 @@ gcloud iam service-accounts keys create gke-sa-key.json --iam-account=$CLUSTER_N
 
 ## Build Worker Node Images
 
-In order to use Cluster API with GCP, specific GCE machines images are required. These need to be built and published for your Google project. You need to have `Packer` and `Ansible` installed locally for this step, or use the `cn-explab-shell` Docker image.
+In order to use Cluster API with GCP, specific GCE machines images are required. These need to be built and published for your Google project. You need to have `Packer` and `Ansible` installed locally for this step.
 
 ```bash
 # either call make target
 make create-images
 
 # or do it manually
-export GCP_PROJECT=cloud-native-experience-lab
+export GCP_PROJECT_ID=cloud-native-experience-lab
 export GOOGLE_APPLICATION_CREDENTIALS=gke-sa-key.json
 
 # checkout and build all images
@@ -67,6 +67,8 @@ cluster-api-ubuntu-1804-v1-23-10-1666653376  cloud-native-experience-lab  capi-u
 cluster-api-ubuntu-2004-v1-22-8-1653399314   cloud-native-experience-lab  capi-ubuntu-2004-k8s-v1-22              READY
 cluster-api-ubuntu-2004-v1-22-9-1653382327   cloud-native-experience-lab  capi-ubuntu-2004-k8s-v1-22              READY
 cluster-api-ubuntu-2004-v1-23-10-1666654232  cloud-native-experience-lab  capi-ubuntu-2004-k8s-v1-23              READY
+cluster-api-ubuntu-2004-v1-26-7-1713386558   cloud-native-experience-lab  capi-ubuntu-2004-k8s-v1-26              READY
+cluster-api-ubuntu-2204-v1-26-7-1713387480   cloud-native-experience-lab  capi-ubuntu-2204-k8s-v1-26              READY
 ```
 
 Pick an image of your choice, depending the the Kubernetes version you want to support. Attention: the Kubernetes version you
@@ -84,7 +86,7 @@ In order to use the Cluster API you need to create a dedicated management cluste
 all child K8s tenant clusters. Optionally, we want the cluster to be fully GitOps integrated.
 
 ```bash
-export KUBERNETES_VERSION=1.22.15
+export KUBERNETES_VERSION=1.26.14
 export CLUSTER_NAME=capi-mgmt-cluster
 
 # either call make targets
@@ -93,8 +95,21 @@ make bootstrap-capi-cluster
 make bootstrap-capi-flux2
 
 # or do it manually
-gcloud container clusters create $CLUSTER_NAME --num-nodes=3 --enable-autoscaling --min-nodes=3 --max-nodes=5 --cluster-version=$KUBERNETES_VERSION
+gcloud container clusters create $CLUSTER_NAME  \
+		--release-channel=regular \
+		--cluster-version=$KUBERNETES_VERSION \
+		--region=$GCP_REGION \ 
+		--addons=HttpLoadBalancing,HorizontalPodAutoscaling \
+		--workload-pool=$GCP_PROJECT.svc.id.goog \
+		--enable-autoscaling \
+		--autoscaling-profile=optimize-utilization \
+		--num-nodes=1 \
+		--min-nodes=1 --max-nodes=5 \
+		--machine-type=e2-standard-8 \
+		--logging=SYSTEM \
+		--monitoring=SYSTEM
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$$(gcloud config get-value core/account)
+kubectl cluster-info
 
 # you may need to set a personal GITHUB_TOKEN to avoid API rate limiting
 export GCP_B64ENCODED_CREDENTIALS=$(cat gke-sa-key.json | base64 | tr -d '\n' )
@@ -104,11 +119,12 @@ clusterctl init --infrastructure gcp
 # you may need to set a personal GITHUB_TOKEN to avoid API rate limiting
 flux bootstrap github \
     --owner=$GITHUB_USER \
-    --repository=cloud-native-explab \
+    --repository=k8s-fleet-capi-gitops \
     --branch=main \
     --path=./clusters/gcp/capi-mgmt-cluster \
     --components-extra=image-reflector-controller,image-automation-controller \
-    --read-write-key
+    --read-write-key  \
+    --personal
 ```
 
 ## Create a CAPI Tenant Cluster
@@ -116,9 +132,10 @@ flux bootstrap github \
 Using on the CAPI management cluster, further tenant cluster can be spawned easily. Essentially, only the required `Cluster`, `GCPCluster`, `KubeadmControlPlane`, `GCPMachineTemplate` and `MachineDeployment` resources need to be created.
 
 ```bash
-export KUBERNETES_VERSION=1.22.15
+export KUBERNETES_VERSION=1.26.14
 
 # to get a list of variables
+clusterctl config repositories
 clusterctl generate cluster capi-tenant-demo --infrastructure=gcp --list-variables
 
 # create and apply the CAPI tenant manifests
