@@ -178,6 +178,13 @@ kubectl --kubeconfig=./capi-tenant-demo.kubeconfig get nodes
 kubectl delete cluster capi-tenant-demo
 ```
 
+## Advanced Topics
+
+- **Cluster-API Operator**: https://github.com/kubernetes-sigs/cluster-api-operator/blob/main/docs/README.md#installation
+- **ClusterResourceSets (beta)**: https://cluster-api.sigs.k8s.io/tasks/experimental-features/cluster-resource-set
+- **Experimental Feature: ClusterClass (alpha)**: https://cluster-api.sigs.k8s.io/tasks/experimental-features/cluster-class/
+
+
 ## Further References
 
 All the steps are also kind of documented in the following resources:
