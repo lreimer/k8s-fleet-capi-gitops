@@ -1,7 +1,7 @@
 GCP_PROJECT ?= cloud-native-experience-lab
 GCP_REGION ?= europe-west1
 GCP_ZONE ?= europe-west1-b
-KUBERNETES_VERSION ?= 1.26.14
+KUBERNETES_VERSION ?= v1.26.14
 GCP_NETWORK_NAME ?= default
 IMAGE_ID ?= projects/$(GCP_PROJECT)/global/images/cluster-api-ubuntu-2204-v1-26-7-1713387480
 CLUSTER_NAME ?= capi-mgmt-cluster

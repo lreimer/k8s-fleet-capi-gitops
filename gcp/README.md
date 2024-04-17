@@ -86,7 +86,6 @@ In order to use the Cluster API you need to create a dedicated management cluste
 all child K8s tenant clusters. Optionally, we want the cluster to be fully GitOps integrated.
 
 ```bash
-export KUBERNETES_VERSION=1.26.14
 export CLUSTER_NAME=capi-mgmt-cluster
 
 # either call make targets
@@ -97,7 +96,7 @@ make bootstrap-capi-flux2
 # or do it manually
 gcloud container clusters create $CLUSTER_NAME  \
 		--release-channel=regular \
-		--cluster-version=$KUBERNETES_VERSION \
+		--cluster-version=1.26 \
 		--region=$GCP_REGION \ 
 		--addons=HttpLoadBalancing,HorizontalPodAutoscaling \
 		--workload-pool=$GCP_PROJECT.svc.id.goog \
@@ -132,7 +131,7 @@ flux bootstrap github \
 Using on the CAPI management cluster, further tenant cluster can be spawned easily. Essentially, only the required `Cluster`, `GCPCluster`, `KubeadmControlPlane`, `GCPMachineTemplate` and `MachineDeployment` resources need to be created.
 
 ```bash
-export KUBERNETES_VERSION=1.26.14
+export KUBERNETES_VERSION=v1.26.14
 
 # to get a list of variables
 clusterctl config repositories
@@ -140,6 +139,7 @@ clusterctl generate cluster capi-tenant-demo --infrastructure=gcp --list-variabl
 
 # create and apply the CAPI tenant manifests
 clusterctl generate cluster capi-tenant-demo --kubernetes-version $KUBERNETES_VERSION --control-plane-machine-count=1 --worker-machine-count=1 > capi-tenant-demo.yaml
+clusterctl generate cluster capi-tenant-demo --config=$PWD/clusterctl.yaml > capi-tenant-demo.yaml
 kubectl apply -f capi-tenant-demo.yaml
 kubectl get cluster 
 

@@ -60,7 +60,7 @@ spec:
       kind: GCPMachineTemplate
       name: capi-tenant-demo-control-plane
   replicas: 1
-  version: "1.22.15"
+  version: v1.26.14
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: GCPMachineTemplate
@@ -70,8 +70,8 @@ metadata:
 spec:
   template:
     spec:
-      image: projects/cloud-native-experience-lab/global/images/cluster-api-ubuntu-2004-v1-22-9-1653382327
-      instanceType: e2-medium
+      image: projects/cloud-native-experience-lab/global/images/cluster-api-ubuntu-2204-v1-26-7-1713387480
+      instanceType: e2-standard-2
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
@@ -95,7 +95,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: GCPMachineTemplate
         name: capi-tenant-demo-md-0
-      version: "1.22.15"
+      version: v1.26.14
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: GCPMachineTemplate
@@ -105,8 +105,8 @@ metadata:
 spec:
   template:
     spec:
-      image: projects/cloud-native-experience-lab/global/images/cluster-api-ubuntu-2004-v1-22-9-1653382327
-      instanceType: e2-medium
+      image: projects/cloud-native-experience-lab/global/images/cluster-api-ubuntu-2204-v1-26-7-1713387480
+      instanceType: e2-standard-2
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
