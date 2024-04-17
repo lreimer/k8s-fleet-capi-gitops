@@ -1,12 +1,10 @@
-# vcluster based multi-tenant platforms on GKE
+# # Cluster API with vCluster Lab (on GCP)
 
 This lab will provision multi-tenant Kubernetes platforms using vcluster on GKE.
-It will also show how to provision usefulinfrastructure components as well
-as a demo application.
 
 ## Prerequisites
 
-Before you dive right into this experience lab, make sure your local environment is setup properly. Alternatively, use the preconfigured `cn-explab-shell` Docker image.
+Before you dive right into this experience lab, make sure your local environment is setup properly.
 
 - Modern Operating System (Windows 10, MacOS, ...) with terminal and shell
 - IDE of your personal choice (with relevant plugins installed), e.g. VS Code or IntelliJ
@@ -16,10 +14,9 @@ Before you dive right into this experience lab, make sure your local environment
 - [Kustomize](https://kustomize.io)
 - [vcluster](https://www.vcluster.com/docs/getting-started/setup)
 
-## GKE Cluster Setup
+## Create a CAPI Management Cluster
 
-In this initial step we will create the GKE cluster using the official Google `gcloud` CLI. We will also
-install and enable additional built-in addons.
+In this step we will create the GKE cluster using the official Google `gcloud` CLI. We will also install and enable additional built-in addons.
 
 1. Configure your local `gcloud` configuration to use the `cloud-native-experience-lab` project and `europe-west1-b` as compute zone.
 2. Create a GKE cluster with the following settings and properties:
@@ -33,8 +30,6 @@ install and enable additional built-in addons.
 4. Add a policy binding to the service account for the workload identity member with the `roles/iam.workloadIdentityUser` IAM role
 
 ```bash
-# or do it manually to better unstand the steps and commands
-# see https://cloud.google.com/sdk/gcloud/reference/container/clusters/create
 export GCP_PROJECT=cloud-native-experience-lab
 export GCP_REGION ?= europe-west1
 export GCP_ZONE ?= europe-west1-b
@@ -44,6 +39,14 @@ gcloud config set project $GCP_PROJECT
 gcloud config set compute/region $GCP_REGION
 gcloud config set compute/zone $GCP_ZONE
 gcloud config set container/use_client_certificate False
+
+# either call make targets
+make create-capi-cluster
+make bootstrap-capi-flux2
+make bootstrap-capi-cluster
+
+# or do it manually to better unstand the steps and commands
+# see https://cloud.google.com/sdk/gcloud/reference/container/clusters/create
 
 # standard version
 gcloud container get-server-config --flatten="channels" --filter="channels.channel=REGULAR" \
@@ -55,9 +58,9 @@ gcloud container get-server-config --flatten="channels" --filter="channels.chann
 
 gcloud container clusters create $CLUSTER_NAME  \
         --release-channel=regular \
-		    --cluster-version=1.27 \
-  		  --region=$(GCP_REGION) \ 
-        --addons HttpLoadBalancing,HorizontalPodAutoscaling,ConfigConnector \
+		--cluster-version=1.26 \
+  		--region=$(GCP_REGION) \ 
+        --addons=HttpLoadBalancing,HorizontalPodAutoscaling \
         --workload-pool=$GCP_PROJECT.svc.id.goog \
         --enable-autoscaling \
         --autoscaling-profile=optimize-utilization \
@@ -67,6 +70,8 @@ gcloud container clusters create $CLUSTER_NAME  \
         --logging=SYSTEM \
         --monitoring=SYSTEM
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=`gcloud config get-value core/account`
+
+
 ```
 
 ## vCluster Tenant Setup using the CLI
@@ -84,17 +89,17 @@ In this initial step we will install and bootstrap a vCluster based tenant clust
 
 ```bash
 # create the vcluster tenant instance
-vcluster create tenant-00 --expose=true --connect=false --values=tools/vcluster-values.yaml
+vcluster create tenant-00 --expose=true --connect=false --values=values.yaml
 vcluster list
 
 vcluster connect tenant-00
 kubectl get namespaces
 
-vcluster connect tenant-00 --update-current=false --kube-config=kubeconfig/tenant-00.yaml
-kubectl --kubeconfig kubeconfig/tenant-00.yaml get namespaces
+vcluster connect tenant-00 --update-current=false --kube-config=tenant-00.kubeconfig
+kubectl --kubeconfig tenant-00.kubeconfig get namespaces
 
 # or export the custom kubeconfig
-export KUBECONFIG=$PWD/kubeconfig/tenant-00.yaml
+export KUBECONFIG=$PWD/tenant-00.kubeconfig
 ```
 
 ## vCluster Tenant Setup using Helm and Flux

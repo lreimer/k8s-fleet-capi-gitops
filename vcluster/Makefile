@@ -11,7 +11,7 @@ prepare-gcp:
 	@gcloud config set compute/zone $(GCP_ZONE)
 	@gcloud config set container/use_client_certificate False
 
-create-gcp-cluster:
+create-capi-cluster:
 	@gcloud container clusters create $(CLUSTER_NAME) \
 	  	--release-channel=regular \
 		--cluster-version=1.26 \
@@ -28,7 +28,7 @@ create-gcp-cluster:
 	@kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$$(gcloud config get-value core/account)
 	@kubectl cluster-info
 
-bootstrap-gcp-flux2:
+bootstrap-capi-flux2:
 	@flux bootstrap github \
 		--owner=$(GITHUB_USER) \
         --repository=k8s-fleet-capi-gitops \
@@ -37,6 +37,11 @@ bootstrap-gcp-flux2:
 		--components-extra=image-reflector-controller,image-automation-controller \
 		--read-write-key \
 		--personal
+
+bootstrap-capi-cluster:
+	# required to avoid API rate limiting
+	@echo "You may need to set a personal GITHUB_TOKEN to avoid API rate limiting"
+	@clusterctl init --infrastructure vcluster
 
 bootstrap-vcluster-flux2:
 	@flux bootstrap github \
@@ -48,5 +53,5 @@ bootstrap-vcluster-flux2:
 		--read-write-key \
 		--personal
 
-delete-gcp-cluster:
+delete-capi-cluster:
 	@gcloud container clusters delete $(CLUSTER_NAME) --region=$(GCP_REGION) --async --quiet
