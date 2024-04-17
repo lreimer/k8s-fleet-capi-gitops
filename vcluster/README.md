@@ -70,8 +70,6 @@ gcloud container clusters create $CLUSTER_NAME  \
         --logging=SYSTEM \
         --monitoring=SYSTEM
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=`gcloud config get-value core/account`
-
-
 ```
 
 ## vCluster Tenant Setup using the CLI
@@ -105,7 +103,7 @@ export KUBECONFIG=$PWD/tenant-00.kubeconfig
 ## vCluster Tenant Setup using Helm and Flux
 
 For this to work you need to have Flux installed as GitOps tool on your CAPI management cluster. Under the hood, 
-the vCluster from the previous section uses Helm to install a vCluster tenant. Make sure to run `make 
+the vCluster from the previous section uses Helm to install a vCluster tenant.
 
 ```bash
 # see https://fluxcd.io/docs/get-started/
@@ -119,9 +117,9 @@ flux bootstrap github \
     --repository=k8s-fleet-capi-gitops \
     --branch=main \
     --path=./clusters/gcp/$(CLUSTER_NAME) \
-		--components-extra=image-reflector-controller,image-automation-controller \
-		--read-write-key \
-		--personal
+	--components-extra=image-reflector-controller,image-automation-controller \
+	--read-write-key \
+	--personal
 
 # you may need to update and modify Flux kustomization
 # - infrastructure-sync.yaml
