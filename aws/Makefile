@@ -17,7 +17,7 @@ bootstrap-capi-flux2:
 	@echo "You must set a personal GITHUB_TOKEN"
 	@flux bootstrap github \
 		--owner=$(GITHUB_USER) \
-        --repository=cloud-native-explab \
+        --repository=k8s-fleet-capi-gitops \
         --branch=main \
         --path=./clusters/aws/capi-mgmt-cluster \
 		--components-extra=image-reflector-controller,image-automation-controller \
@@ -43,7 +43,7 @@ create-tenant:
 	# kubectl get kubeadmcontrolplane
 
 	# clusterctl get kubeconfig capi-tenant-demo > capi-tenant-demo.kubeconfig
-	# kubectl --kubeconfig=./capi-tenant-demo.kubeconfig apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calico.yaml
+	# kubectl --kubeconfig=./capi-tenant-demo.kubeconfig apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
 	# kubectl --kubeconfig=./capi-tenant-demo.kubeconfig get nodes
 
 delete-tenant:

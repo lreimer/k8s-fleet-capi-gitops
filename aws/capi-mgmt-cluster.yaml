@@ -4,7 +4,7 @@ kind: ClusterConfig
 metadata:
   name: capi-mgmt-cluster
   region: eu-central-1
-  version: '1.22'
+  version: '1.26'
 
 iam:
   withOIDC: true
