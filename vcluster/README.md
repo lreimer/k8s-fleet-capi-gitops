@@ -148,6 +148,7 @@ Using on the CAPI management cluster, further tenant cluster can be spawned easi
 
 ```bash
 export KUBERNETES_VERSION=v1.26.14
+export HELM_VALUES="service:\n  type: LoadBalancer"
 
 # to get a list of variables
 clusterctl config repositories
@@ -158,6 +159,10 @@ clusterctl generate cluster capi-tenant-demo --infrastructure=vcluster --kuberne
 clusterctl generate cluster capi-tenant-demo --infrastructure=vcluster --config=$PWD/clusterctl.yaml > capi-tenant-demo.yaml
 kubectl apply -f capi-tenant-demo.yaml
 kubectl get all 
+
+kubectl create ns vcluster-tenant-01
+clusterctl generate cluster tenant-01 --infrastructure=vcluster --target-namespace=vcluster-tenant-01 --config=$PWD/clusterctl.yaml > tenant-01.yaml
+kubectl apply -f tenant-01.yaml
 
 vcluster list
 vcluster connect capi-tenant-demo

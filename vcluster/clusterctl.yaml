@@ -1,3 +1,14 @@
+KUBERNETES_VERSION: v1.26.14
 HELM_VALUES: |-
   service:
     type: LoadBalancer
+  proxy:
+    metricsServer:
+      nodes:
+        enabled: true
+      pods:
+        enabled: true
+  sync:
+    nodes:
+      enabled: true
+      syncAllNodes: true

@@ -4,7 +4,7 @@ GCP_ZONE ?= europe-west1-b
 
 GITHUB_USER ?= lreimer
 CLUSTER_NAME ?= capi-mgmt-vcluster
-VCLUSTER_NAME ?= tenant-01
+VCLUSTER_NAME ?= tenant-00
 
 prepare-gcp:
 	@gcloud config set project $(GCP_PROJECT)
