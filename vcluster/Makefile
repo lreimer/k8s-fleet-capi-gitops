@@ -48,7 +48,7 @@ bootstrap-vcluster-flux2:
 		--owner=$(GITHUB_USER) \
         --repository=k8s-fleet-capi-gitops \
         --branch=main \
-        --path=./clusters/gcp/$(CLUSTER_NAME)/$(VCLUSTER_NAME) \
+        --path=./clusters/gcp/vcluster-$(VCLUSTER_NAME) \
 		--components-extra=image-reflector-controller,image-automation-controller \
 		--read-write-key \
 		--personal
