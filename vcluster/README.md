@@ -70,6 +70,20 @@ gcloud container clusters create $CLUSTER_NAME  \
         --logging=SYSTEM \
         --monitoring=SYSTEM
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=`gcloud config get-value core/account`
+
+# may need to add --personal if the GITHUB_USER is not an org
+# you may need to set a personal GITHUB_TOKEN to avoid API rate limiting
+flux bootstrap github \
+    --owner=$GITHUB_USER \
+    --repository=k8s-fleet-capi-gitops \
+    --branch=main \
+    --path=./clusters/gcp/capi-mgmt-cluster \
+    --components-extra=image-reflector-controller,image-automation-controller \
+    --read-write-key  \
+    --personal
+
+clusterctl config repositories
+clusterctl init --infrastructure vcluster
 ```
 
 ## vCluster Tenant Setup using the CLI
@@ -128,17 +142,38 @@ flux bootstrap github \
 flux reconcile source git flux-system
 ```
 
-
 ## vCluster Tenant Setup using Cluster-API
 
-```
+Using on the CAPI management cluster, further tenant cluster can be spawned easily. Essentially, only the required `Cluster`, `GCPCluster`, `KubeadmControlPlane`, `GCPMachineTemplate` and `MachineDeployment` resources need to be created.
 
-```
+```bash
+export KUBERNETES_VERSION=v1.26.14
 
+# to get a list of variables
+clusterctl config repositories
+clusterctl generate cluster capi-tenant-demo --infrastructure=vcluster --list-variables
+
+# create and apply the CAPI tenant manifests
+clusterctl generate cluster capi-tenant-demo --infrastructure=vcluster --kubernetes-version $KUBERNETES_VERSION > capi-tenant-demo.yaml
+clusterctl generate cluster capi-tenant-demo --infrastructure=vcluster --config=$PWD/clusterctl.yaml > capi-tenant-demo.yaml
+kubectl apply -f capi-tenant-demo.yaml
+kubectl get all 
+
+vcluster list
+vcluster connect capi-tenant-demo
+kubectl get namespaces
+
+vcluster connect capi-tenant-demo --update-current=false --kube-config=capi-tenant-demo.kubeconfig
+kubectl --kubeconfig capi-tenant-demo.kubeconfig get namespaces
+
+# or export the custom kubeconfig
+export KUBECONFIG=$PWD/capi-tenant-demo.kubeconfig
+```
 
 ## Tenant Bootstrapping with Flux2
 
 In this step we bootstrap Flux2 as GitOps tool to provision the tenenant cluster with its infrastracture and platform and application components.
+Make sure your are connected to the tenant cluster!
 
 1. Bootstrap Flux using this repository as source
     - Add following extra components: `image-reflector-controller` and `image-automation-controller`
@@ -161,17 +196,10 @@ flux bootstrap github \
     --read-write-key \
     --personal
 
-# to manually trigger the GitOps process use the following commands
-flux reconcile source git flux-system
-
 # you may need to update and modify Flux kustomization
 # - infrastructure-sync.yaml
 # - applications-sync.yaml
 
-# to automatically trigger the GitOps process 
-# you also need to create or update the webhooks for the Git Repository
-# Payload URL: http://<LoadBalancerAddress>/<ReceiverURL>
-# Secret: the webhook-token value
-$ kubectl -n flux-system get svc/receiver
-$ kubectl -n flux-system get receiver/webapp
+# to manually trigger the GitOps process use the following commands
+flux reconcile source git flux-system
 ```
