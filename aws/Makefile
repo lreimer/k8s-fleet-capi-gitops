@@ -3,7 +3,7 @@ AWS_REGION ?= eu-central-1
 GITHUB_USER ?= lreimer
 
 create-capi-cluster:
-	@eksctl create cluster -f capi-cluster.yaml
+	@eksctl create cluster -f capi-mgmt-cluster.yaml
 
 prepare-capi-aws:
 	# create an SSH key

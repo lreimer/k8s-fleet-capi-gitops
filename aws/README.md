@@ -12,10 +12,12 @@ In order to use the Cluster API you need to create a dedicated management cluste
 
 ```bash
 # either call make targets
-# make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set locally!!!
 export AWS_REGION=eu-central-1
+# make sure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set locally!!!
+export AWS_ACCESS_KEY_ID=<INSERT>
+export AWS_SECRET_ACCESS_KEY=<INSERT>
 
-make bootstrap-capi-cluster
+make create-capi-cluster
 make bootstrap-capi-flux2
 
 make prepare-capi-aws
@@ -36,15 +38,12 @@ flux bootstrap github \
     --personal
 
 # configure the AWS account for CAPI
-export AWS_REGION=eu-central-1
-export AWS_ACCESS_KEY_ID=<INSERT>
-export AWS_SECRET_ACCESS_KEY=<INSERT>
 clusterawsadm bootstrap iam create-cloudformation-stack --config bootstrap-config.yaml
 
 # you may need to set a personal GITHUB_TOKEN to avoid API rate limiting
 export AWS_SSH_KEY_NAME=capi-default
-export AWS_CONTROL_PLANE_MACHINE_TYPE=t3.medium
-export AWS_NODE_MACHINE_TYPE=t3.medium
+export AWS_CONTROL_PLANE_MACHINE_TYPE=t3.large
+export AWS_NODE_MACHINE_TYPE=t3.large
 export AWS_B64ENCODED_CREDENTIALS=$(clusterawsadm bootstrap credentials encode-as-profile)
 clusterctl init --infrastructure aws
 ```
