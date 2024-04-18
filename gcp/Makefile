@@ -83,4 +83,4 @@ bootstrap-capi-flux2:
 		--personal
 
 delete-capi-cluster:
-	@gcloud container clusters delete capi-mgmt-cluster --async --quiet
+	@gcloud container clusters delete capi-mgmt-cluster --region=$(GCP_REGION) --async --quiet
