@@ -50,4 +50,4 @@ delete-tenant:
 	@kubectl delete -f capi-tenant-demo
 
 delete-capi-cluster:
-	@eksctl delete cluster -f capi-cluster.yaml
+	@eksctl delete cluster -f capi-mgmt-cluster.yaml
