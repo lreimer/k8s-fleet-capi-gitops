@@ -55,7 +55,7 @@ Using on the CAPI management cluster, further tenant cluster can be spawned easi
 ```bash
 export KUBERNETES_VERSION=v1.26.14
 export AWS_REGION=eu-central-1
-export AWS_SSH_KEY_NAME=capi-default
+export AWS_SSH_KEY_NAME=default
 export AWS_CONTROL_PLANE_MACHINE_TYPE=t3.large
 export AWS_NODE_MACHINE_TYPE=t3.large
 
@@ -64,7 +64,7 @@ clusterctl generate cluster capi-tenant-demo --infrastructure=aws --list-variabl
 
 # create and apply the CAPI tenant manifests
 clusterctl generate cluster capi-tenant-demo --kubernetes-version $KUBERNETES_VERSION --control-plane-machine-count=1 --worker-machine-count=1 > capi-tenant-demo.yaml
-clusterctl generate cluster capi-tenant-demo --config=$PWD/clusterctl.yaml > capi-tenant-demo.yaml
+clusterctl generate cluster capi-tenant-demo --infrastructure=aws --config=$PWD/clusterctl.yaml > capi-tenant-demo.yaml
 kubectl apply -f capi-tenant-demo.yaml
 kubectl get cluster 
 

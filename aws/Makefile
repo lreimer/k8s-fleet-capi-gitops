@@ -28,7 +28,7 @@ bootstrap-capi-cluster:
 	# required to avoid API rate limiting
 	@echo "You may need to set a personal GITHUB_TOKEN to avoid API rate limiting"
 	@export AWS_REGION=$(AWS_REGION)
-	@export AWS_SSH_KEY_NAME=capi-default
+	@export AWS_SSH_KEY_NAME=default
 	@export AWS_CONTROL_PLANE_MACHINE_TYPE=t3.medium
 	@export AWS_NODE_MACHINE_TYPE=t3.medium
 	@export AWS_B64ENCODED_CREDENTIALS=$(shell clusterawsadm bootstrap credentials encode-as-profile)
