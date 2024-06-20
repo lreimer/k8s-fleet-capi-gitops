@@ -24,7 +24,7 @@ create-capi-cluster:
 	@gcloud container clusters create $(CLUSTER_NAME) \
 		--release-channel=regular \
 		--cluster-version=1.26 \
-		--region=$(GCP_REGION) \ 
+		--region=$(GCP_REGION) \
 		--addons=HttpLoadBalancing,HorizontalPodAutoscaling \
 		--workload-pool=$(GCP_PROJECT).svc.id.goog \
 		--enable-autoscaling \
